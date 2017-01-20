@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Lista Telefonica</title>
     <link rel="stylesheet" href="lib/bootstrap/bootstrap.css">
-    
+        
     <style>
         .jumbotron{
             width: 50%;
@@ -30,8 +30,9 @@
     </style>
 
     <script src="lib/angular/angular.js"></script>
+    <script src="lib/angular/angular-messages.js"></script>
     <script>
-        angular.module("listaTelefonica", []);
+        angular.module("listaTelefonica", ["ngMessages"]);
         angular.module("listaTelefonica").controller("listaTelefonicaCtrl", function($scope){
             $scope.app = "Lista Telefonica";
             $scope.contatos = [
@@ -49,6 +50,7 @@
             $scope.adicionarContato = function(contato){
                 $scope.contatos.push(angular.copy(contato));
                 delete $scope.contato;
+                $scope.contatoForm.$setPristine();
             };
             $scope.apagarContatos = function(contatos){
                 $scope.contatos = contatos.filter(function(contato){
@@ -78,14 +80,33 @@
             <!--<td ng-repeat="(key, value) in contato">{{value}}-->
         </table>
         <hr>
-        <input class="form-control" type="text" ng-model="contato.nome" placeholder="Nome">
-        <input class="form-control" type="text" ng-model="contato.telefone" placeholder="(xx) x xxxx-xxxx">
-        <select class="form-control" ng-model="contato.operadora" ng-options="operadora.nome group by operadora.categoria for operadora in operadoras">
-            <option value="">Selecione uma operadora</option>
-        </select>
+        <form name="contatoForm">
+            <input class="form-control" type="text" ng-model="contato.nome" name="nome" placeholder="Nome" ng-required="true" ng-minlength="10"/>
+            <input class="form-control" type="text" ng-model="contato.telefone" name="telefone" placeholder="(xx) x xxxx-xxxx" ng-required="true" ng-pattern="/^\d{2}\d{4,5}-\d{4}$/"/>
+            <select class="form-control" ng-model="contato.operadora" ng-options="operadora.nome group by operadora.categoria for operadora in operadoras" ng-required="true">
+                <option value="" ng-disabled="true">Selecione uma operadora</option>
+            </select>
+        </form>
 
+        <div ng-messages="contatoForm.nome.$error" class="alert alert-danger">
+
+            <div ng-message="required">
+                Por favor preencha o nome do contato.
+            </div>
+            <div ng-message="minlength">
+                O campo nome deve ter no mínimo 10 caracteres.
+            </div>
+
+        </div>
+
+        <div ng-show="contatoForm.telefone.$error.required && contatoForm.telefone.$dirty" class="alert alert-danger">
+            Por favor preencha o telefone do contato.
+        </div>
+        <div ng-show="contatoForm.telefone.$error.pattern" class="alert alert-danger">
+            O campo telefone deve ter o formato xx xxxxx-xx
+        </div>
         <!--Botoes de controle-->
-        <button class="btn btn-primary btn-block" ng-click="adicionarContato(contato)" ng-disabled="!contato.nome || !contato.telefone">Adicionar aos contatos</button>
+        <button class="btn btn-primary btn-block" ng-click="adicionarContato(contato)" ng-disabled="contatoForm.$invalid">Adicionar aos contatos</button>
         <button class="btn btn-danger btn-block" ng-click="apagarContatos(contatos)" ng-if="isContatoSelecionado(contatos)">Apagar contatos</button>
     </div>
 
